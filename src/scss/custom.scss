@@ -1,0 +1,30 @@
+@import "../../node_modules/bootstrap/scss/bootstrap.scss";
+@import url("https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Karla&display=swap");
+
+body {
+  h1 {
+    font-family: "Alfa Slab One";
+  }
+  p {
+    font-family: "Karla";
+    margin: 0;
+  }
+
+  background-color: white;
+  select,
+  option {
+    border: none;
+    background-color: transparent;
+    width: 100%;
+  }
+
+  .cryptoCurrencies {
+    border: none;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    img {
+      width: 34px;
+    }
+  }
+}
