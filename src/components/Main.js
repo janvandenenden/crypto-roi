@@ -18,63 +18,109 @@ function MainMessage() {
   const [currency, setCurrency] = useState("usd");
   const [cryptoCurrency, setCryptoCurrency] = useState("ethereum");
   const [investment, setInvestment] = useState(100);
-  const [investmentStartDate, setInvestmentStartDate] = useState("23-06-2020");
-  const [investmentStartDates, setInvestmentStartDates] = useState();
-  const [date, setDate] = useState();
+  const [investmentStartDate, setInvestmentStartDate] = useState();
+  const [investmentStartDates, setInvestmentStartDates] = useState({});
   const [historicPrice, setHistoricPrice] = useState({});
   const [currentPrice, setCurrentPrice] = useState({});
   const [change, setChange] = useState(0);
+
+  const createInvestmentStartDates = () => {
+    let today = new Date();
+    let year = today.getFullYear();
+    let month = today.getMonth();
+
+    let twoYearsAgo = new Date();
+    twoYearsAgo.setFullYear(year - 2);
+    let oneYearAgo = new Date();
+    oneYearAgo.setFullYear(year - 1);
+    let oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(month - 1);
+    let threeMonthsAgo = new Date();
+    threeMonthsAgo.setMonth(month - 3);
+    let sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(month - 6);
+
+    setInvestmentStartDates({
+      oneMonthAgo: oneMonthAgo.toLocaleString().substr(0, 10),
+      threeMonthsAgo: threeMonthsAgo.toLocaleString().substr(0, 10),
+      sixMonthsAgo: sixMonthsAgo.toLocaleString().substr(0, 10),
+      oneYearAgo: oneYearAgo.toLocaleString().substr(0, 10),
+      twoYearsAgo: twoYearsAgo.toLocaleString().substr(0, 10),
+    });
+  };
 
   async function getCurrentPrice(cryptoCurrency) {
     try {
       const response = await api.get(
         `https://api.coingecko.com/api/v3/coins/${cryptoCurrency}`
       );
-      const mainCurrencies = {
+      setCurrentPrice({
         eur: response.data.market_data.current_price["eur"],
         gbp: response.data.market_data.current_price["gbp"],
         usd: response.data.market_data.current_price["usd"],
         jpy: response.data.market_data.current_price["jpy"],
-      };
-      setCurrentPrice(mainCurrencies);
+      });
     } catch (error) {
       console.error(error);
     }
   }
 
   async function getHistoricPrice(cryptoCurrency, investmentStartDate) {
-    let date = "";
-    if (investmentStartDate !== undefined) {
-      let convertedInvestmentStartDate = new Date(
-        parseDate(investmentStartDate.toLocaleString(), "dd-mm-yyyy")
-      );
-      let day = ("0" + convertedInvestmentStartDate.getDate()).slice(-2);
-      let month = ("0" + (convertedInvestmentStartDate.getMonth() + 1)).slice(
-        -2
-      );
-      let year = convertedInvestmentStartDate.getFullYear();
-      date = `${day}-${month}-${year}`;
-    } else {
-      date = `23-06-2020`;
-    }
+    let convertedInvestmentStartDate = new Date(
+      parseDate(
+        investmentStartDate?.toLocaleString() || "01/01/2016",
+        "dd-mm-yyyy"
+      )
+    );
+    let day = ("0" + convertedInvestmentStartDate.getDate()).slice(-2);
+    let month = ("0" + (convertedInvestmentStartDate.getMonth() + 1)).slice(-2);
+    let year = convertedInvestmentStartDate.getFullYear();
+    const date = `${day}-${month}-${year}`;
     try {
       const response = await api.get(
         `https://api.coingecko.com/api/v3/coins/${cryptoCurrency}/history?date=${date}&localization=false`
       );
-
-      const mainCurrencies = {
+      setHistoricPrice({
         eur: response?.data.market_data?.current_price["eur"],
         gbp: response?.data.market_data?.current_price["gbp"],
         usd: response?.data.market_data?.current_price["usd"],
         jpy: response?.data.market_data?.current_price["jpy"],
-      };
-      setHistoricPrice(mainCurrencies);
+      });
     } catch (error) {
       console.error(error);
     }
+    console.log(
+      "change ",
+      change,
+      "\n",
+      "currency ",
+      currency,
+      "\n",
+      "cryptoCurrency ",
+      cryptoCurrency,
+      "\n",
+      "currentPrice ",
+      currentPrice[currency],
+      "\n",
+      "historicPrice ",
+      historicPrice[currency],
+      "\n",
+      "historicPrices ",
+      historicPrice,
+      "\n",
+      "historicPrice ",
+      historicPrice[currency],
+      "\n",
+      "investmentStartDates ",
+      investmentStartDates,
+      "\n",
+      "investmentStartDate ",
+      investmentStartDate,
+      new Date().getTime()
+    );
   }
 
-  function parseDate(input, format) {
+  const parseDate = (input, format) => {
     format = format || "yyyy-mm-dd"; // default format
     var parts = input.match(/(\d+)/g),
       i = 0,
@@ -85,13 +131,19 @@ function MainMessage() {
     });
 
     return new Date(parts[fmt["yyyy"]], parts[fmt["mm"]] - 1, parts[fmt["dd"]]);
-  }
+  };
 
-  const calculateChange = () => {
-    const change = (
-      investment *
-      (currentPrice[currency] / historicPrice[currency])
-    ).toFixed(2);
+  const calculateChange = (
+    investment,
+    currentPrice,
+    historicPrice,
+    currency
+  ) => {
+    let change =
+      ((investment / historicPrice[currency]) * currentPrice[currency]).toFixed(
+        0
+      ) || 0;
+    if (isNaN(change)) change = 0;
     setChange(change);
   };
 
@@ -134,31 +186,11 @@ function MainMessage() {
       id: "cardano",
       ticker: "ada",
     },
+    {
+      id: "dogecoin",
+      ticker: "doge",
+    },
   ];
-
-  const createInvestmentStartDates = () => {
-    let today = new Date();
-    let year = today.getFullYear();
-    let month = today.getMonth();
-    let twoYearsAgo = new Date();
-    let oneYearAgo = new Date();
-    let oneMonthAgo = new Date();
-    let threeMonthsAgo = new Date();
-    let sixMonthsAgo = new Date();
-    oneMonthAgo.setMonth(month - 1);
-    threeMonthsAgo.setMonth(month - 3);
-    sixMonthsAgo.setMonth(month - 6);
-    oneYearAgo.setFullYear(year - 1);
-    twoYearsAgo.setFullYear(year - 2);
-    setDate(today.toLocaleString().substr(0, 10));
-    setInvestmentStartDates({
-      oneMonthAgo: oneMonthAgo.toLocaleString().substr(0, 10),
-      threeMonthsAgo: threeMonthsAgo.toLocaleString().substr(0, 10),
-      sixMonthsAgo: sixMonthsAgo.toLocaleString().substr(0, 10),
-      oneYearAgo: oneYearAgo.toLocaleString().substr(0, 10),
-      twoYearsAgo: twoYearsAgo.toLocaleString().substr(0, 10),
-    });
-  };
 
   useEffect(() => {
     createInvestmentStartDates();
@@ -169,13 +201,13 @@ function MainMessage() {
   }, [investmentStartDates]);
 
   useEffect(() => {
-    getCurrentPrice(cryptoCurrency);
     getHistoricPrice(cryptoCurrency, investmentStartDate);
-  }, [cryptoCurrency, investmentStartDate, currency]);
+    getCurrentPrice(cryptoCurrency);
+  }, [cryptoCurrency, investmentStartDate, investmentStartDates]);
 
   useEffect(() => {
-    calculateChange(investment, currency);
-  }, [currentPrice, historicPrice, investment]);
+    calculateChange(investment, currentPrice, historicPrice, currency);
+  }, [currentPrice, historicPrice, investment, currency]);
 
   const currencyIcon = currencies.find((obj) => {
     return obj.id === currency;
@@ -190,37 +222,36 @@ function MainMessage() {
       <div className="navbar fixed-top container bg-white">
         <div className="row">
           <div
-            className="d-flex cryptoCurrenciesContainer col-lg-6"
+            className="d-flex cryptoCurrenciesContainer btn-group col-lg-8"
             role="group"
             aria-label="cryptocurrencies"
           >
-            {cryptoCurrencies.map((cryptoCurrency) => (
+            {cryptoCurrencies.map((crypto) => (
               <button
                 type="button"
-                className="btn btn-white cryptoCurrencies d-flex"
+                className={`btn cryptoCurrencies d-flex justify-content-center ${
+                  cryptoCurrency === crypto.id ? "active" : ""
+                }`}
                 data-bs-toggle="button"
-                aria-pressed={true}
+                aria-pressed="true"
                 aria-current="true"
                 autoComplete="off"
-                id={cryptoCurrency.id}
-                key={cryptoCurrency.id}
+                id={crypto.id}
+                key={crypto.id}
                 onClick={(e) => {
                   setCryptoCurrency(e.currentTarget.id);
                 }}
               >
-                <img
-                  src={`../img/${cryptoCurrency.id}.png`}
-                  alt={cryptoCurrency.id}
-                />
-                <span className="ml-2 small font-weight-bold d-none d-lg-block">
-                  {cryptoCurrency.ticker}
+                <img src={`../img/${crypto.id}.png`} alt={crypto.id} />
+                <span className="ml-2 small font-weight-bold d-none d-lg-block text-uppercase">
+                  {crypto.ticker}
                 </span>
               </button>
             ))}
           </div>
           <div
             id="investmentRange"
-            className="col-lg-6 pt-3 pt-md-0 d-flex align-items-center"
+            className="col-lg-4 pt-5 pt-lg-0 d-flex align-items-center"
           >
             <label
               htmlFor="investment"
@@ -246,53 +277,57 @@ function MainMessage() {
         className="d-flex flex-column bg-white"
         style={{ minHeight: "calc(100vh - 116px)", marginTop: "62px" }}
       >
-        <div className="my-auto container text-left">
+        <div className="my-auto container text-left text-muted">
           <h1>
             <Textfit mode="single">
-              <FontAwesomeIcon size="sm" icon={currencyIcon.icon} />{" "}
-              {investment}
-              <span className="text-muted"> of </span> {cryptoCurrency}
+              <FontAwesomeIcon icon={currencyIcon.icon} color="#00f5d4" />{" "}
+              <span className="dynamic investment">{investment}</span> of{" "}
+              <span className="dynamic cryptoCurrency text-capitalize">
+                {cryptoCurrency}
+              </span>
             </Textfit>
             <Textfit mode="single">
-              <span className="text-muted">bought on</span>{" "}
-              {investmentStartDate}
-              <span className="text-muted">,</span>
+              bought on{" "}
+              <span className="dynamic investmentStartDate">
+                {investmentStartDate}
+              </span>
+              ,
             </Textfit>
+            <Textfit mode="single">would be worth</Textfit>
             <Textfit mode="single">
-              <span className="text-muted">would be worth</span>
-            </Textfit>
-            <Textfit mode="single">
-              <FontAwesomeIcon size="sm" icon={currencyIcon.icon} /> {change}{" "}
-              <span className="text-muted">today!</span>
+              <FontAwesomeIcon icon={currencyIcon.icon} color="#00f5d4" />{" "}
+              <span className="dynamic">{change}</span> today!
             </Textfit>
           </h1>
         </div>
       </div>
-      <div className="navbar fixed-bottom container bg-white">
+      <div className="navbar container bg-white">
         <div
           className="d-flex currenciesContainer col-sm-6"
           role="group"
           aria-label="cryptocurrencies"
         >
-          {currencies.map((currency) => (
+          {currencies.map((currencyCoin) => (
             <button
               type="button"
-              className="btn btn-outline-dark rounded-circle ml-2 currency"
+              className={`btn currencyButton rounded-circle ml-2 ${
+                currency === currencyCoin.id ? "active" : ""
+              }`}
               data-bs-toggle="button"
               autoComplete="off"
-              id={currency.id}
-              key={currency.id}
+              id={currencyCoin.id}
+              key={currencyCoin.id}
               onClick={(e) => {
                 setCurrency(e.currentTarget.id);
               }}
             >
-              <FontAwesomeIcon icon={currency.icon} />
+              <FontAwesomeIcon icon={currencyCoin.icon} />
             </button>
           ))}
         </div>
         <div>
           <select
-            className="form-select border-0 bg-white"
+            className="form-select border-0 font-weight-bold investmentStartDate"
             aria-label="Set start date of investment"
             onChange={(e) => handleInvestmentStartChange(e)}
           >

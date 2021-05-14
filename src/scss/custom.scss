@@ -1,5 +1,20 @@
-@import "../../node_modules/bootstrap/scss/bootstrap.scss";
 @import url("https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Karla&display=swap");
+
+$crypto-color: #fee440;
+$currency-color: #00f5d4;
+$investment-color: #00bbf9;
+$investmentStartDate-color: #9b5de5;
+
+// change the theme
+$theme-colors: (
+  "danger": $crypto-color,
+  "info": $currency-color,
+);
+
+$form-select-indicator-color: $investmentStartDate-color;
+$form-range-thumb-bg: $investment-color;
+$form-select-color: $investmentStartDate-color;
+@import "../../node_modules/bootstrap/scss/bootstrap.scss";
 
 body {
   h1 {
@@ -19,12 +34,39 @@ body {
   }
 
   .cryptoCurrencies {
-    border: none;
+    &.active {
+      border-bottom: 7px solid $crypto-color;
+    }
     display: flex;
     align-items: center;
     width: 100%;
     img {
       width: 34px;
     }
+  }
+  .dynamic {
+    text-decoration-line: underline;
+    text-decoration-thickness: 7px;
+    color: black;
+  }
+  .cryptoCurrency {
+    text-decoration-color: $crypto-color;
+  }
+  .investment {
+    text-decoration-color: $investment-color;
+  }
+  .currency {
+    color: $currency-color;
+  }
+  .currencyButton {
+    border: 2px solid black;
+    color: black;
+    &.active {
+      border: 2px solid $currency-color;
+      color: $currency-color;
+    }
+  }
+  .investmentStartDate {
+    text-decoration-color: $investmentStartDate-color;
   }
 }
