@@ -89,35 +89,6 @@ function MainMessage() {
     } catch (error) {
       console.error(error);
     }
-    console.log(
-      "change ",
-      change,
-      "\n",
-      "currency ",
-      currency,
-      "\n",
-      "cryptoCurrency ",
-      cryptoCurrency,
-      "\n",
-      "currentPrice ",
-      currentPrice[currency],
-      "\n",
-      "historicPrice ",
-      historicPrice[currency],
-      "\n",
-      "historicPrices ",
-      historicPrice,
-      "\n",
-      "historicPrice ",
-      historicPrice[currency],
-      "\n",
-      "investmentStartDates ",
-      investmentStartDates,
-      "\n",
-      "investmentStartDate ",
-      investmentStartDate,
-      new Date().getTime()
-    );
   }
 
   const parseDate = (input, format) => {
@@ -129,7 +100,6 @@ function MainMessage() {
     format.replace(/(yyyy|dd|mm)/g, function (part) {
       fmt[part] = i++;
     });
-
     return new Date(parts[fmt["yyyy"]], parts[fmt["mm"]] - 1, parts[fmt["dd"]]);
   };
 
@@ -139,10 +109,10 @@ function MainMessage() {
     historicPrice,
     currency
   ) => {
-    let change =
-      ((investment / historicPrice[currency]) * currentPrice[currency]).toFixed(
-        0
-      ) || 0;
+    let change = (
+      (investment / historicPrice[currency]) *
+      currentPrice[currency]
+    ).toFixed(0);
     if (isNaN(change)) change = 0;
     setChange(change);
   };
@@ -216,10 +186,35 @@ function MainMessage() {
   const handleInvestmentStartChange = (e) => {
     setInvestmentStartDate(investmentStartDates[e.target.value]);
   };
-
+  console.log(
+    "change ",
+    change,
+    "\n",
+    "currency ",
+    currency,
+    "\n",
+    "cryptoCurrency ",
+    cryptoCurrency,
+    "\n",
+    "currentPrice ",
+    currentPrice[currency],
+    "\n",
+    "historicPrices ",
+    historicPrice,
+    "\n",
+    "historicPrice ",
+    historicPrice[currency],
+    "\n",
+    "investmentStartDates ",
+    investmentStartDates,
+    "\n",
+    "investmentStartDate ",
+    investmentStartDate,
+    new Date().getTime()
+  );
   return (
-    <>
-      <div className="navbar fixed-top container bg-white">
+    <div className="min-vh-100 d-flex flex-column justify-content-between">
+      <div className="navbar container-fluid bg-white">
         <div className="row">
           <div
             className="d-flex cryptoCurrenciesContainer btn-group col-lg-8"
@@ -251,7 +246,7 @@ function MainMessage() {
           </div>
           <div
             id="investmentRange"
-            className="col-lg-4 pt-5 pt-lg-0 d-flex align-items-center"
+            className="col-lg-4 pt-3 pt-lg-0 d-flex align-items-center"
           >
             <label
               htmlFor="investment"
@@ -273,37 +268,31 @@ function MainMessage() {
           </div>
         </div>
       </div>
-      <div
-        className="d-flex flex-column bg-white"
-        style={{ minHeight: "calc(100vh - 116px)", marginTop: "62px" }}
-      >
-        <div className="my-auto container text-left text-muted">
-          <h1>
-            <Textfit mode="single">
-              <FontAwesomeIcon icon={currencyIcon.icon} color="#00f5d4" />{" "}
-              <span className="dynamic investment">{investment}</span> of{" "}
-              <span className="dynamic cryptoCurrency text-capitalize">
-                {cryptoCurrency}
-              </span>
-            </Textfit>
-            <Textfit mode="single">
-              bought on{" "}
-              <span className="dynamic investmentStartDate">
-                {investmentStartDate}
-              </span>
-              ,
-            </Textfit>
-            <Textfit mode="single">would be worth</Textfit>
-            <Textfit mode="single">
-              <FontAwesomeIcon icon={currencyIcon.icon} color="#00f5d4" />{" "}
-              <span className="dynamic">{change}</span> today!
-            </Textfit>
+      <div className="d-flex flex-column bg-white">
+        <div className="my-auto container-fluid">
+          <h1 className="display-3">
+            <FontAwesomeIcon icon={currencyIcon.icon} color="#011627" />{" "}
+            <span className="dynamic text-dark investment">{investment}</span>{" "}
+            of{" "}
+            <span className="dynamic cryptoCurrency text-capitalize">
+              {cryptoCurrency}
+            </span>
+            <br />
+            bought on{" "}
+            <span className="dynamic investmentStartDate">
+              {investmentStartDate}
+            </span>
+            ,<br /> would be worth
+            <br />
+            <FontAwesomeIcon icon={currencyIcon.icon} color="#011627" />{" "}
+            <span className="dynamic">{change}</span> <br />
+            today!
           </h1>
         </div>
       </div>
-      <div className="navbar container bg-white">
+      <div className="navbar d-flex flex-column flex-lg-row container-fluid bg-white">
         <div
-          className="d-flex currenciesContainer col-sm-6"
+          className="d-flex currenciesContainer justify-content-around justify-content-lg-start"
           role="group"
           aria-label="cryptocurrencies"
         >
@@ -327,7 +316,7 @@ function MainMessage() {
         </div>
         <div>
           <select
-            className="form-select border-0 font-weight-bold investmentStartDate"
+            className="form-select form-select-lg border-0 font-weight-bold investmentStartDate"
             aria-label="Set start date of investment"
             onChange={(e) => handleInvestmentStartChange(e)}
           >
@@ -339,7 +328,7 @@ function MainMessage() {
           </select>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

@@ -1,14 +1,16 @@
 @import url("https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Karla&display=swap");
 
-$crypto-color: #fee440;
-$currency-color: #00f5d4;
-$investment-color: #00bbf9;
-$investmentStartDate-color: #9b5de5;
+$crypto-color: #e71d36;
+$currency-color: #011627;
+$investment-color: #2ec4b6;
+$investmentStartDate-color: #ff9f1c;
+$white: #fdfffc;
 
 // change the theme
 $theme-colors: (
   "danger": $crypto-color,
   "info": $currency-color,
+  "white": $white,
 );
 
 $form-select-indicator-color: $investmentStartDate-color;
@@ -19,13 +21,16 @@ $form-select-color: $investmentStartDate-color;
 body {
   h1 {
     font-family: "Alfa Slab One";
+    &.display-3 {
+      line-height: 1.6;
+    }
   }
   p {
     font-family: "Karla";
     margin: 0;
   }
 
-  background-color: white;
+  background-color: $white;
   select,
   option {
     border: none;
@@ -41,7 +46,7 @@ body {
     align-items: center;
     width: 100%;
     img {
-      width: 34px;
+      width: 24px;
     }
   }
   .dynamic {
@@ -59,11 +64,13 @@ body {
     color: $currency-color;
   }
   .currencyButton {
-    border: 2px solid black;
-    color: black;
+    border: 2px solid $currency-color;
+    color: $currency-color;
+    background-color: $white;
     &.active {
       border: 2px solid $currency-color;
-      color: $currency-color;
+      color: $white;
+      background-color: $currency-color;
     }
   }
   .investmentStartDate {
