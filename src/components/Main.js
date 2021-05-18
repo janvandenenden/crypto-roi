@@ -14,40 +14,45 @@ import api from "../api";
 
 import "../scss/custom.scss";
 
+const createInvestmentStartDates = () => {
+  let today = new Date();
+  let year = today.getFullYear();
+  let month = today.getMonth();
+
+  let twoYearsAgo = new Date();
+  twoYearsAgo.setFullYear(year - 2);
+  let oneYearAgo = new Date();
+  oneYearAgo.setFullYear(year - 1);
+  let oneMonthAgo = new Date();
+  oneMonthAgo.setMonth(month - 1);
+  let threeMonthsAgo = new Date();
+  threeMonthsAgo.setMonth(month - 3);
+  let sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(month - 6);
+
+  return {
+    oneMonthAgo: oneMonthAgo.toLocaleString().substr(0, 10),
+    threeMonthsAgo: threeMonthsAgo.toLocaleString().substr(0, 10),
+    sixMonthsAgo: sixMonthsAgo.toLocaleString().substr(0, 10),
+    oneYearAgo: oneYearAgo.toLocaleString().substr(0, 10),
+    twoYearsAgo: twoYearsAgo.toLocaleString().substr(0, 10),
+  };
+};
+
 function MainMessage() {
   const [currency, setCurrency] = useState("usd");
   const [cryptoCurrency, setCryptoCurrency] = useState("ethereum");
   const [investment, setInvestment] = useState(100);
-  const [investmentStartDate, setInvestmentStartDate] = useState();
-  const [investmentStartDates, setInvestmentStartDates] = useState({});
+  const [investmentStartDates, setInvestmentStartDates] = useState(() =>
+    createInvestmentStartDates()
+  );
+  const [investmentStartDate, setInvestmentStartDate] = useState(
+    investmentStartDates.twoYearsAgo
+  );
+
   const [historicPrice, setHistoricPrice] = useState({});
   const [currentPrice, setCurrentPrice] = useState({});
   const [change, setChange] = useState(0);
-
-  const createInvestmentStartDates = () => {
-    let today = new Date();
-    let year = today.getFullYear();
-    let month = today.getMonth();
-
-    let twoYearsAgo = new Date();
-    twoYearsAgo.setFullYear(year - 2);
-    let oneYearAgo = new Date();
-    oneYearAgo.setFullYear(year - 1);
-    let oneMonthAgo = new Date();
-    oneMonthAgo.setMonth(month - 1);
-    let threeMonthsAgo = new Date();
-    threeMonthsAgo.setMonth(month - 3);
-    let sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(month - 6);
-
-    setInvestmentStartDates({
-      oneMonthAgo: oneMonthAgo.toLocaleString().substr(0, 10),
-      threeMonthsAgo: threeMonthsAgo.toLocaleString().substr(0, 10),
-      sixMonthsAgo: sixMonthsAgo.toLocaleString().substr(0, 10),
-      oneYearAgo: oneYearAgo.toLocaleString().substr(0, 10),
-      twoYearsAgo: twoYearsAgo.toLocaleString().substr(0, 10),
-    });
-  };
 
   async function getCurrentPrice(cryptoCurrency) {
     try {
@@ -67,10 +72,7 @@ function MainMessage() {
 
   async function getHistoricPrice(cryptoCurrency, investmentStartDate) {
     let convertedInvestmentStartDate = new Date(
-      parseDate(
-        investmentStartDate?.toLocaleString() || "01/01/2016",
-        "dd-mm-yyyy"
-      )
+      parseDate(investmentStartDate?.toLocaleString(), "dd-mm-yyyy")
     );
     let day = ("0" + convertedInvestmentStartDate.getDate()).slice(-2);
     let month = ("0" + (convertedInvestmentStartDate.getMonth() + 1)).slice(-2);
@@ -173,7 +175,7 @@ function MainMessage() {
   useEffect(() => {
     getHistoricPrice(cryptoCurrency, investmentStartDate);
     getCurrentPrice(cryptoCurrency);
-  }, [cryptoCurrency, investmentStartDate, investmentStartDates]);
+  }, [cryptoCurrency, investmentStartDate]);
 
   useEffect(() => {
     calculateChange(investment, currentPrice, historicPrice, currency);
@@ -186,32 +188,6 @@ function MainMessage() {
   const handleInvestmentStartChange = (e) => {
     setInvestmentStartDate(investmentStartDates[e.target.value]);
   };
-  console.log(
-    "change ",
-    change,
-    "\n",
-    "currency ",
-    currency,
-    "\n",
-    "cryptoCurrency ",
-    cryptoCurrency,
-    "\n",
-    "currentPrice ",
-    currentPrice[currency],
-    "\n",
-    "historicPrices ",
-    historicPrice,
-    "\n",
-    "historicPrice ",
-    historicPrice[currency],
-    "\n",
-    "investmentStartDates ",
-    investmentStartDates,
-    "\n",
-    "investmentStartDate ",
-    investmentStartDate,
-    new Date().getTime()
-  );
   return (
     <div className="min-vh-100 d-flex flex-column justify-content-between">
       <div className="navbar container-fluid bg-white">
