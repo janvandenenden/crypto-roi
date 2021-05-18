@@ -8,12 +8,11 @@ import {
   faPoundSign,
 } from "@fortawesome/free-solid-svg-icons";
 
-import { Textfit } from "react-textfit";
-
 import api from "../api";
 
 import "../scss/custom.scss";
 
+//create start dates for investment
 const createInvestmentStartDates = () => {
   let today = new Date();
   let year = today.getFullYear();
@@ -43,55 +42,12 @@ function MainMessage() {
   const [currency, setCurrency] = useState("usd");
   const [cryptoCurrency, setCryptoCurrency] = useState("ethereum");
   const [investment, setInvestment] = useState(100);
-  const [investmentStartDates, setInvestmentStartDates] = useState(() =>
-    createInvestmentStartDates()
-  );
   const [investmentStartDate, setInvestmentStartDate] = useState(
-    investmentStartDates.twoYearsAgo
+    () => createInvestmentStartDates().twoYearsAgo
   );
-
   const [historicPrice, setHistoricPrice] = useState({});
   const [currentPrice, setCurrentPrice] = useState({});
   const [change, setChange] = useState(0);
-
-  async function getCurrentPrice(cryptoCurrency) {
-    try {
-      const response = await api.get(
-        `https://api.coingecko.com/api/v3/coins/${cryptoCurrency}`
-      );
-      setCurrentPrice({
-        eur: response.data.market_data.current_price["eur"],
-        gbp: response.data.market_data.current_price["gbp"],
-        usd: response.data.market_data.current_price["usd"],
-        jpy: response.data.market_data.current_price["jpy"],
-      });
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-  async function getHistoricPrice(cryptoCurrency, investmentStartDate) {
-    let convertedInvestmentStartDate = new Date(
-      parseDate(investmentStartDate?.toLocaleString(), "dd-mm-yyyy")
-    );
-    let day = ("0" + convertedInvestmentStartDate.getDate()).slice(-2);
-    let month = ("0" + (convertedInvestmentStartDate.getMonth() + 1)).slice(-2);
-    let year = convertedInvestmentStartDate.getFullYear();
-    const date = `${day}-${month}-${year}`;
-    try {
-      const response = await api.get(
-        `https://api.coingecko.com/api/v3/coins/${cryptoCurrency}/history?date=${date}&localization=false`
-      );
-      setHistoricPrice({
-        eur: response?.data.market_data?.current_price["eur"],
-        gbp: response?.data.market_data?.current_price["gbp"],
-        usd: response?.data.market_data?.current_price["usd"],
-        jpy: response?.data.market_data?.current_price["jpy"],
-      });
-    } catch (error) {
-      console.error(error);
-    }
-  }
 
   const parseDate = (input, format) => {
     format = format || "yyyy-mm-dd"; // default format
@@ -103,20 +59,6 @@ function MainMessage() {
       fmt[part] = i++;
     });
     return new Date(parts[fmt["yyyy"]], parts[fmt["mm"]] - 1, parts[fmt["dd"]]);
-  };
-
-  const calculateChange = (
-    investment,
-    currentPrice,
-    historicPrice,
-    currency
-  ) => {
-    let change = (
-      (investment / historicPrice[currency]) *
-      currentPrice[currency]
-    ).toFixed(0);
-    if (isNaN(change)) change = 0;
-    setChange(change);
   };
 
   const currencies = [
@@ -165,19 +107,66 @@ function MainMessage() {
   ];
 
   useEffect(() => {
-    createInvestmentStartDates();
-  }, []);
-
-  useEffect(() => {
-    setInvestmentStartDate(investmentStartDates?.twoYearsAgo);
-  }, [investmentStartDates]);
-
-  useEffect(() => {
+    async function getHistoricPrice(cryptoCurrency, investmentStartDate) {
+      let convertedInvestmentStartDate = new Date(
+        parseDate(investmentStartDate?.toLocaleString(), "dd-mm-yyyy")
+      );
+      let day = ("0" + convertedInvestmentStartDate.getDate()).slice(-2);
+      let month = ("0" + (convertedInvestmentStartDate.getMonth() + 1)).slice(
+        -2
+      );
+      let year = convertedInvestmentStartDate.getFullYear();
+      const date = `${day}-${month}-${year}`;
+      try {
+        const response = await api.get(
+          `https://api.coingecko.com/api/v3/coins/${cryptoCurrency}/history?date=${date}&localization=false`
+        );
+        setHistoricPrice({
+          eur: response?.data.market_data?.current_price["eur"],
+          gbp: response?.data.market_data?.current_price["gbp"],
+          usd: response?.data.market_data?.current_price["usd"],
+          jpy: response?.data.market_data?.current_price["jpy"],
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    }
     getHistoricPrice(cryptoCurrency, investmentStartDate);
-    getCurrentPrice(cryptoCurrency);
   }, [cryptoCurrency, investmentStartDate]);
 
   useEffect(() => {
+    async function getCurrentPrice(cryptoCurrency) {
+      try {
+        const response = await api.get(
+          `https://api.coingecko.com/api/v3/coins/${cryptoCurrency}`
+        );
+        setCurrentPrice({
+          eur: response.data.market_data.current_price["eur"],
+          gbp: response.data.market_data.current_price["gbp"],
+          usd: response.data.market_data.current_price["usd"],
+          jpy: response.data.market_data.current_price["jpy"],
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    getCurrentPrice(cryptoCurrency);
+  }, [cryptoCurrency]);
+
+  useEffect(() => {
+    const calculateChange = (
+      investment,
+      currentPrice,
+      historicPrice,
+      currency
+    ) => {
+      let change = (
+        (investment / historicPrice[currency]) *
+        currentPrice[currency]
+      ).toFixed(0);
+      if (isNaN(change)) change = "calculating";
+      setChange(change);
+    };
     calculateChange(investment, currentPrice, historicPrice, currency);
   }, [currentPrice, historicPrice, investment, currency]);
 
@@ -186,8 +175,9 @@ function MainMessage() {
   });
 
   const handleInvestmentStartChange = (e) => {
-    setInvestmentStartDate(investmentStartDates[e.target.value]);
+    setInvestmentStartDate(createInvestmentStartDates()[e.target.value]);
   };
+
   return (
     <div className="min-vh-100 d-flex flex-column justify-content-between">
       <div className="navbar container-fluid bg-white">
@@ -236,6 +226,7 @@ function MainMessage() {
               className="form-range"
               min="100"
               max="10000"
+              step="25"
               id="investment"
               onChange={(e) => {
                 setInvestment(e.currentTarget.value);
@@ -247,22 +238,23 @@ function MainMessage() {
       <div className="d-flex flex-column bg-white">
         <div className="my-auto container-fluid">
           <h1 className="display-3">
+            If you invested
+            <br />
             <FontAwesomeIcon icon={currencyIcon.icon} color="#011627" />{" "}
             <span className="dynamic text-dark investment">{investment}</span>{" "}
-            of{" "}
+            in{" "}
             <span className="dynamic cryptoCurrency text-capitalize">
               {cryptoCurrency}
             </span>
             <br />
-            bought on{" "}
+            on{" "}
             <span className="dynamic investmentStartDate">
               {investmentStartDate}
             </span>
-            ,<br /> would be worth
+            ,<br /> it would be worth
             <br />
             <FontAwesomeIcon icon={currencyIcon.icon} color="#011627" />{" "}
-            <span className="dynamic">{change}</span> <br />
-            today!
+            <span className="dynamic">{change}</span> today!
           </h1>
         </div>
       </div>
